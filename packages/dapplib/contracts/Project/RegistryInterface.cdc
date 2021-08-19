@@ -50,7 +50,7 @@ pub contract interface RegistryInterface {
     // instance
     // instance returns an Tenant resource.
     //
-    pub fun instance(authNFT: &RegistryService.AuthNFT): @Tenant
+    pub fun instance(authFT: &RegistryService.AuthFT): @Tenant
 
     // getTenants
     // getTenants returns clientTenants.

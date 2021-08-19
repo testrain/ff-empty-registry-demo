@@ -1,35 +1,27 @@
 pub contract RegistryService {
-    pub var totalSupply: UInt64
+    pub var totalSupply: UFix64
 
-    // IAuthNFT
-    // A resource interface that lets us expose
-    // just the authID to the public. This is mainly
-    // used so we can check if a AuthNFT exists in an
-    // account in the has_auth_nft.cdc script.
-    //
-    pub resource interface IAuthNFT {
-        pub let authID: UInt64
+    pub resource interface IAuthFT {
+        pub var balance: UFix64
     }
-
-    // AuthNFT
-    // The AuthNFT exists so an owner of a DappContract
+    // AuthFT
+    // The AuthFT exists so an owner of a DappContract
     // can "register" with this RegistryService contract in order
     // to use contracts that exist within the Registry.
     //
     // This will only need to be acquired one time.
-    // Ex. A new account comes to the Registry, gets this AuthNFT,
+    // Ex. A new account comes to the Registry, gets this AuthFT,
     // and can now interact and retrieve Tenants from whatever
     // Registry contracts they want. They will never have to get another
-    // AuthNFT.
+    // AuthFT.
     //
-    pub resource AuthNFT: IAuthNFT {
-        // The unique ID of this AuthNFT
-        pub let authID: UInt64
+    pub resource AuthFT: IAuthFT {
+        pub var balance: UFix64
 
-        init() {
-            self.authID = RegistryService.totalSupply
+        init(balance: UFix64) {
+            self.balance = balance
 
-            RegistryService.totalSupply = RegistryService.totalSupply + (1 as UInt64)
+            RegistryService.totalSupply = RegistryService.totalSupply + self.balance
         }
     }
 
@@ -37,21 +29,19 @@ pub contract RegistryService {
     // register gets called by someone who has never registered with 
     // RegistryService before.
     //
-    // It returns a AuthNFT.
+    // It returns a AuthFT.
     //
-    pub fun register(): @AuthNFT {        
-        return <- create AuthNFT()
+    pub fun register(): @AuthFT {        
+        return <- create AuthFT(balance: 0.0)
     }
 
     // Named Paths
     //
     pub let AuthStoragePath: StoragePath
-    pub let AuthPublicPath: PublicPath
 
     init() {
-        self.totalSupply = 0
+        self.totalSupply = 0.0
 
-        self.AuthStoragePath = /storage/RegistryServiceAuthNFT
-        self.AuthPublicPath = /public/RegistryServiceAuthNFT
+        self.AuthStoragePath = /storage/RegistryServiceAuthFT
     }
-}
+} 

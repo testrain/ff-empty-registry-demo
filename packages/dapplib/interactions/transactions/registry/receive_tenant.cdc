@@ -1,36 +1,32 @@
-import RegistrySampleContract from Project.RegistrySampleContract
+import RegistryFTContract from Project.RegistryFTContract
 import RegistryService from Project.RegistryService
 
 // This transaction allows any Tenant to receive a Tenant Resource from
-// RegistrySampleContract. It saves the resource to account storage.
+// RegistryFTContract. It saves the resource to account storage.
 //
 // Note that this can only be called by someone who has already registered
-// with the RegistryService and received an AuthNFT.
+// with the RegistryService and received an AuthFT.
 
 transaction() {
 
   prepare(signer: AuthAccount) {
     // save the Tenant resource to the account if it doesn't already exist
-    if signer.borrow<&RegistrySampleContract.Tenant>(from: RegistrySampleContract.TenantStoragePath) == nil {
-      // borrow a reference to the AuthNFT in account storage
-      let authNFTRef = signer.borrow<&RegistryService.AuthNFT>(from: RegistryService.AuthStoragePath)
-                        ?? panic("Could not borrow the AuthNFT")
+    if signer.borrow<&RegistryFTContract.Tenant>(from: RegistryFTContract.TenantStoragePath) == nil {
+      // borrow a reference to the AuthFT in account storage
+      let authFTRef = signer.borrow<&RegistryService.AuthFT>(from: RegistryService.AuthStoragePath)
+                        ?? panic("Could not borrow the AuthFT")
       
-      // save the new Tenant resource from RegistrySampleContract to account storage
-      signer.save(<-RegistrySampleContract.instance(authNFT: authNFTRef), to: RegistrySampleContract.TenantStoragePath)
+      // save the new Tenant resource from RegistryFTContract to account storage
+      signer.save(<-RegistryFTContract.instance(authFT: authFTRef), to: RegistryFTContract.TenantStoragePath)
 
-      // link the Tenant resource to the public
-      //
-      // NOTE: this is commented out for now because it is dangerous to link
-      // our Tenant to the public without any resource interfaces restricting it.
-      // If you add resource interfaces that Tenant must implement, you can
-      // add those here and then uncomment the line below.
-      // 
-      // signer.link<&RegistrySampleContract.Tenant>(RegistrySampleContract.TenantPublicPath, target: RegistrySampleContract.TenantStoragePath)
+      // link Tenant{ITenant} resource to public
+      signer.link<&RegistryFTContract.Tenant{RegistryFTContract.ITenant}>(RegistryFTContract.TenantPublicPath, target: RegistryFTContract.TenantStoragePath)
+      // link Tenant{ITenantAdmin} resource to private, as only the owner can mint / burn tokens.
+      signer.link<&RegistryFTContract.Tenant{RegistryFTContract.ITenantAdmin}>(RegistryFTContract.TenantPrivatePath, target: RegistryFTContract.TenantStoragePath)
     }
   }
 
   execute {
-    log("Registered a new Tenant for RegistrySampleContract.")
+    log("Registered a new Tenant for RegistryFTContract.")
   }
 }
